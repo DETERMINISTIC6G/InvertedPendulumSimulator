@@ -35,6 +35,14 @@ find_package(SFML COMPONENTS graphics window system REQUIRED)
 add_executable(cartpole game/main.cpp)
 target_link_libraries(cartpole source sfml-graphics sfml-window sfml-system)
 
+# Add executable of networked control system
+find_package(Threads REQUIRED)
+find_package(SFML COMPONENTS graphics window system REQUIRED)
+add_executable(plant networked_control_system/plant.cpp networked_control_system/socket_utils.cpp networked_control_system/marshaling.cpp)
+add_executable(controller_pid networked_control_system/controller_pid.cpp networked_control_system/socket_utils.cpp networked_control_system/marshaling.cpp)
+target_link_libraries(plant source sfml-graphics sfml-window sfml-system Threads::Threads)
+target_link_libraries(controller_pid source)
+
 # Add executable to run examples
 add_executable(example examples/lqr_design.cpp)
 target_link_libraries(example source)
