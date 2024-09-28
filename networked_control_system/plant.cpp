@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
 
 		if (log_file && t_next_log_output_usec <= t_current_usec) {
 			double angle = ptr->GetState()(1);
-			if (fprintf(log_file, "%" PRIu64 ",%f\n", t_current_usec, angle) < 0)
+			if (fprintf(log_file, "%" PRIu64 ",%f\n", t_current_usec, to_degrees(angle)) < 0)
 				perror("Failed to write log entry");
 			t_next_log_output_usec += LOG_INTERVAL_USEC;
 		}
