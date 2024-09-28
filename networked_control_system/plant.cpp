@@ -53,6 +53,8 @@
 #include <atomic>
 #include <mutex>
 #include <inttypes.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "Eigen/Dense"
 #include "inverted_pendulum.h"
@@ -63,12 +65,16 @@
 #define MAX_STR_LEN 1024
 #define MAX_PKT_SIZE 65535
 
+#define LOG_INTERVAL_USEC 10000
+
 // Global configuration parameters.
 char ctrl_host[MAX_STR_LEN];
 char ctrl_service[MAX_STR_LEN];
 uint64_t cycletime_usec = 0;
 
 int sock = -1;
+
+char log_file_path[MAX_STR_LEN];
 
 pthread_t thread;
 std::atomic_int update_ready(0);
@@ -97,6 +103,7 @@ void usage(const char *prog)
              "-d HOST : destination host (name or IP address) \n"
              "-p PORT : destination service (service name or port number) \n"
              "-c CYCLETIME : cycle time in micro-seconds for sending datagrams \n"
+	     "-f FILENAME : log file \n"
              "\n", prog);
 }
 
@@ -109,27 +116,32 @@ int parse_cmdline_args(int argc, char *argv[])
      int opt;
      memset(ctrl_host, 0, MAX_STR_LEN);
      memset(ctrl_service, 0, MAX_STR_LEN);
+     memset(log_file_path, 0, MAX_STR_LEN);
      bool isdef_cycletime = false;
 
-     while ( (opt = getopt(argc, argv, "d:p:c:")) != -1 ) {
-          switch(opt) {
-          case 'd' :
-               strncpy(ctrl_host, optarg, MAX_STR_LEN-1);
-               break;
-          case 'p' :
-               strncpy(ctrl_service, optarg, MAX_STR_LEN-1);
-               break;
-          case 'c' :
-               cycletime_usec = strtoull(optarg, NULL, 10);
-               isdef_cycletime = true;
-               break;
-          case ':' :
-          case '?' :
-          default :
-               return -1;
-          }
+     
+     while ( (opt = getopt(argc, argv, "d:p:c:f:")) != -1 ) {
+	     switch(opt) {
+	     case 'd' :
+		     strncpy(ctrl_host, optarg, MAX_STR_LEN-1);
+		     break;
+	     case 'p' :
+		     strncpy(ctrl_service, optarg, MAX_STR_LEN-1);
+		     break;
+	     case 'c' :
+		     cycletime_usec = strtoull(optarg, NULL, 10);
+		     isdef_cycletime = true;
+		     break;
+	     case 'f' :
+		     strncpy(log_file_path, optarg, MAX_STR_LEN-1);
+		     break;
+	     case ':' :
+	     case '?' :
+	     default :
+		     return -1;
+	     }
      }
-
+     
      if (strlen(ctrl_host) == 0 || strlen(ctrl_service) == 0 || !isdef_cycletime)
           return -1;
 
@@ -180,6 +192,16 @@ int main(int argc, char *argv[])
 	if (pthread_create(&thread, NULL, receiver_thread_run, NULL)) {
 		perror("Could not create thread");
 		die(1);
+	}
+
+	// Open log file if requested.
+	FILE *log_file = NULL;
+	if (strlen(log_file_path) > 0) {
+		log_file = fopen(log_file_path, "w");
+		if (log_file == NULL) {
+			perror("Could not open log file");
+			die(1);
+		}
 	}
 	
 	sf::RenderWindow window(sf::VideoMode(640, 480), "Inverted Pendulum");
@@ -238,7 +260,9 @@ int main(int argc, char *argv[])
 
 	// First cycle starts now.
 	uint64_t t_next_cycle_usec = clock.getElapsedTime().asMicroseconds();
-			
+
+	uint64_t t_next_log_output_usec = t_next_cycle_usec;
+
 	while (window.isOpen()) {
 		sf::Event event;
 		while (window.pollEvent(event)) {
@@ -267,7 +291,8 @@ int main(int argc, char *argv[])
 			} else {
 				//printf("State sent: time = %" PRIu64 " us  angle = %f degree\n", t_current_usec, angle);
 			}
-			t_next_cycle_usec = t_current_usec + cycletime_usec;
+			
+			t_next_cycle_usec += cycletime_usec;
 		}
 		
 		// If an update from the controller is available, update system input.
@@ -299,7 +324,17 @@ int main(int argc, char *argv[])
 		window.draw(pole);
 		window.draw(text);
 		window.display();
+
+		if (log_file && t_next_log_output_usec <= t_current_usec) {
+			double angle = ptr->GetState()(1);
+			if (fprintf(log_file, "%" PRIu64 ",%f\n", t_current_usec, angle) < 0)
+				perror("Failed to write log entry");
+			t_next_log_output_usec += LOG_INTERVAL_USEC;
+		}
 	}
+
+	if (log_file)
+		fclose(log_file);
 	
 	return 0;
 }
