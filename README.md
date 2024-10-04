@@ -29,4 +29,10 @@ t.b.d.
 
 # Acknowledgements
 
-t.b.d.
+InvertedPendulum was originally developed by Antonio Sanchez ([original repository](https://github.com/jasleon/Inverted-Pendulum)).
+
+The extensions in this repository for networked control systems have been made in the context of the DETERMINISTIC6G project, which has received funding from the European Union's Horizon Europe research and innovation programme under grant agreement No. 101096504.
+
+[DETERMINISTIC6G Project Website](https://deterministic6g.eu/).
+
+DETERMINISTIC6G e-mail: coordinator@deterministic6g.eu
