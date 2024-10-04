@@ -1,60 +1,32 @@
-# Inverted Pendulum
-![build](https://github.com/jasleon/Inverted-Pendulum/actions/workflows/main.yml/badge.svg)
-![GitHub last commit](https://img.shields.io/github/last-commit/jasleon/Inverted-Pendulum)
+This repository is a fork of the [InvertedPendulum simulator](https://github.com/jasleon/Inverted-Pendulum) developed by Antonio Sanchez.
 
-A simple simulator to test control algorithms in C++
+This implementation was extended in the context of the [DETERMINISTIC6G](https://deterministic6g.eu/) research project to support the evaluation of networked control systems communicating over Time-Sensitive Networks (TSN) including, in particular, wireless 5G/6G TSN bridges.
+Typically, such wireless TSN bridges have fundamentally different characteristics with respect to port-to-port (bridge) delay (stochastic heavy-tailed delay, orders of magnitude higher than for wired TSN bridges). 
+Since delay is critical for control systems, we want to evaluate the Quality of Control (QoC) if the networked control system is exposed to this characteristic network delay.
 
-<p align="center">
-  <img src="img/carpole-free.gif" width=50% height=50%/>
-</p>
-<p align="center">
-    Inverted pendulum in open-loop
-</p>
+To enable such evaluations, we modified the original implementation of the inverted pendulum as follows:
 
-<p align="center">
-  <img src="img/cartpole-pid.gif" width=50% height=50%/>
-</p>
-<p align="center">
-    Inverted pendulum in closed-loop with PID
-</p>
+* We separate the inverted pendulum (plant) from the controller (hosted for instance in an edge cloud environment) and connect them through a UDP packet stream to close the control loop over the network. 
+* We then either use network emulation or simulation to emulate or simulate the characteristic network delay induced by wireless TSN bridges, respectively. 
 
-<p align="center">
-  <img src="img/cartpole-lqr.gif" width=50% height=50%/>
-</p>
-<p align="center">
-    Inverted pendulum in closed-loop with LQR
-</p>
+For network emulation, we use the [Network Delay Emulator](https://github.com/DETERMINISTIC6G/NetworkDelayEmulator) developed by the DETERMINISTIC6G project.
 
-## Notes
-This simulator is being developed on Ubuntu using the Windows Subsystem for Linux (WSL)
+For network simulation, we use the [DETERMINISTIC6G extensions](https://github.com/DETERMINISTIC6G/deterministic6g) of the OMNeT++/INET network simulator. 
 
-## Dependencies
-- cmake
-- make
-- gcc/g++
-- [eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) (included)
-- [sfml](https://www.sfml-dev.org/)
-- [googletest](https://github.com/google/googletest) (optional)
-- [sciplot](https://github.com/sciplot/sciplot) (optional)
+Both, simulations and emulations, utilize the [delay measurements](https://github.com/DETERMINISTIC6G/deterministic6g_data) from real 5G networks of the DETERMINISTIC6G project.  
 
-## Build Instructions
-1. Clone this repo.
-2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make`
-4. Run it: `./cartpole`
+In the following, we describe how to use the distributed inverted pendulum together with network emulation or simulation.
+We focus this description on the extensions made to the original inverted pendulum implementation (without distributed implementation).
+If you are interested in the original, non-distributed pendulum, you can find the original README file in a [separate file](), or in the [original repository](https://github.com/jasleon/Inverted-Pendulum).
 
-## Guidelines
-- [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html)
-- [Udacity Git Commit Message Style Guide](http://udacity.github.io/git-styleguide/)
+# Network Emulation & Inverted Pendulum
 
-## References
-### Projects
-- [CartPole-v1](https://gym.openai.com/envs/CartPole-v1/)
-- [Riccati_Solver](https://github.com/TakaHoribe/Riccati_Solver)
-### Tutorials
-- [Install WSL on Windows 10](https://www.howtogeek.com/249966/how-to-install-and-use-the-linux-bash-shell-on-windows-10/)
-- [Install SFML in Linux](https://www.sfml-dev.org/tutorials/2.5/start-linux.php)
-- [Install sciplot](https://sciplot.github.io/installation/)
-- [Build googletest](https://github.com/google/googletest/blob/master/googletest/README.md)
-### Books
-- Åström, K. J., & Murray, R. M. (2021). *Feedback systems: An introduction for scientists and engineers* (2nd ed.). Princeton University Press. ([online](https://fbswiki.org/wiki/index.php/Feedback_Systems:_An_Introduction_for_Scientists_and_Engineers))
+t.b.d.
+
+# Network Simulation & Inverted Pendulum
+
+t.b.d.
+
+# Acknowledgements
+
+t.b.d.
