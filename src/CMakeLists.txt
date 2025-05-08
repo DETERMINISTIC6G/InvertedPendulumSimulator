@@ -1,2 +1,14 @@
-add_library(source inverted_pendulum.cpp tools.cpp pid.cpp riccati_solver.cpp lqr.cpp)
-target_include_directories(source PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+cmake_minimum_required(VERSION 3.25)
+
+#find_package(Boost 1.53 COMPONENTS program_options REQUIRED)
+#include_directories(${Boost_INCLUDE_DIR})
+
+set(CMAKE_CXX_STANDARD 17)
+
+project(InvertedPendulumSimulator)
+
+add_executable(simulate inverted_pendulum/inverted_pendulum.cc inverted_pendulum/inverted_pendulum.h apps/simulate.cc)
+
+find_package(SFML COMPONENTS graphics window system REQUIRED)
+add_executable(visualization apps/visualization.cc inverted_pendulum/inverted_pendulum.h)
+target_link_libraries(visualization sfml-graphics sfml-window sfml-system)
