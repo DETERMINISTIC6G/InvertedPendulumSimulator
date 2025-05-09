@@ -11,7 +11,7 @@
 // Length of pendulum to center of mass [m]
 #define PARAM_l 0.3
 // Initial angle of pendulum [rad]
-#define PARAM_angle 0.087 
+#define PARAM_angle 0.349 
 // Initial speed of cart [m/s]
 #define PARAM_v 0.0
 
