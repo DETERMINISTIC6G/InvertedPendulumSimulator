@@ -67,7 +67,7 @@ public:
 	 *
 	 * @param d duration of simulation [s]
 	 * @param dt step size of simulation [s]
-	 * @param states ordered sequence of states with timestamps, approximately one state per interval dt.
+	 * @param states output will be added to states as ordered sequence of states with timestamps, approximately one state per interval dt.
 	 */
 	void simulate(double d, double dt, state_sequence_t &states);
 
