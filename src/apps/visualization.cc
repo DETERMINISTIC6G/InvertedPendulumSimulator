@@ -85,7 +85,7 @@ int main()
 	
 	prepare_states_vis(states, states_vis);
 		
-	sf::RenderWindow window(sf::VideoMode(640, 480), "Inverted Pendulum");
+	sf::RenderWindow window(sf::VideoMode(1024, 480), "Inverted Pendulum");
 
 	// Load font
 	sf::Font font;
@@ -103,9 +103,9 @@ int main()
 
 
 	// Create a track for the cart
-	sf::RectangleShape track(sf::Vector2f(640.0F, 2.0F));
-	track.setOrigin(320.0F, 1.0F);
-	track.setPosition(320.0F, 240.0F);
+	sf::RectangleShape track(sf::Vector2f(1024.0F, 2.0F));
+	track.setOrigin(512.0F, 1.0F);
+	track.setPosition(512.0F, 240.0F);
 	const sf::Color light_grey = sf::Color(0xAA, 0xAA, 0xAA);
 	track.setFillColor(light_grey);
 
