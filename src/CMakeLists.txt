@@ -16,3 +16,10 @@ add_executable(simulate-position_angle inverted_pendulum/inverted_pendulum.cc in
 find_package(SFML COMPONENTS graphics window system REQUIRED)
 add_executable(visualization apps/visualization.cc inverted_pendulum/inverted_pendulum.h)
 target_link_libraries(visualization sfml-graphics sfml-window sfml-system)
+
+add_executable(simulate-event_queue inverted_pendulum/inverted_pendulum.cc inverted_pendulum/inverted_pendulum.h 
+                                    apps/simulate-event_queue.cc 
+                                    controller/pid.h controller/pid.cc
+                                    events/event_queue.h events/event_queue.cc
+                                    )
+
