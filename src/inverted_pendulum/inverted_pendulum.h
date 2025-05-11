@@ -3,6 +3,7 @@
 
 #include <array>
 #include <vector>
+#include "../events/event_receiver.h"
 
 /**
  * State of the pendulum system:
@@ -16,7 +17,7 @@ typedef std::array<double, 4> pendulum_state_t;
 typedef std::pair<double, pendulum_state_t> time_state_t;
 typedef std::vector<time_state_t> state_sequence_t;
 
-class InvertedPendulum
+class InvertedPendulum : public EventReceiver
 {
 public:
         /**
@@ -70,6 +71,14 @@ public:
 	 * @param states output will be added to states as ordered sequence of states with timestamps, approximately one state per interval dt.
 	 */
 	void simulate(double d, double dt, state_sequence_t &states);
+
+	/**
+	 * Simulate the system for one step.
+	 *
+	 * @param dt step size of simulation [s]
+	 * @param states output will be added to states as ordered sequence of states with timestamps, approximately one state per interval dt.
+	 */
+	void simulate(double dt, state_sequence_t &states);
 
 	/**
 	 * Functor: object can be called by boost::odeint to calculate the derivatives dxdt

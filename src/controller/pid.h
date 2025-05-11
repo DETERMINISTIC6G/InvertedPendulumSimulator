@@ -1,7 +1,9 @@
 #ifndef PID_H
 #define PID_H
 
-class PIDController
+#include "../events/event_receiver.h"
+
+class PIDController : public EventReceiver
 {
 public:
 	/**

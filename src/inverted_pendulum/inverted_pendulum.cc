@@ -107,3 +107,13 @@ void InvertedPendulum::simulate(double d, double dt, state_sequence_t &states)
 	// at some time t' with t+d - dt < t' <= t+d.
 	t = states.back().first;
 }
+
+void InvertedPendulum::simulate(double dt, state_sequence_t &states)
+{
+	Observer observer(states);
+	
+	rk4().do_step(*this, state, t, dt);
+	observer(state, t+dt);
+
+	t += dt;
+}
