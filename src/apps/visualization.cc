@@ -8,7 +8,7 @@
 
 #include "../inverted_pendulum/inverted_pendulum.h"
 
-#define FILE_PATH "states.csv"
+#define FILE_PATH "states-eventqueue.csv"//"states.csv"
 #define FRAME_RATE 30
 
 bool read_states(const char *path, state_sequence_t &states_vis)
@@ -16,7 +16,7 @@ bool read_states(const char *path, state_sequence_t &states_vis)
 	std::ifstream infile(path);
 
 	if (!infile.is_open()) {
-		perror("Could not open file");
+		perror("Could not open states file");
 		return -1;
 	}
 
@@ -89,7 +89,7 @@ int main()
 
 	// Load font
 	sf::Font font;
-	if (!font.loadFromFile("Hack")) {
+	if (!font.loadFromFile("../../res/Roboto-Regular.ttf")){//("Hack")) {
 		std::cerr << "Failed to load font!\n";
 	}
 
