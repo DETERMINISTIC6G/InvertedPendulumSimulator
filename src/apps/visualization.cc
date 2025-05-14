@@ -8,7 +8,7 @@
 
 #include "../inverted_pendulum/inverted_pendulum.h"
 
-#define FILE_PATH "states-eventqueue.csv"//"states.csv"
+#define FILE_PATH "states.csv"
 #define FRAME_RATE 30
 
 bool read_states(const char *path, state_sequence_t &states_vis)
