@@ -29,6 +29,9 @@
 // Sampling period [s]
 #define PARAM_TSAMP 0.01
 
+// LQR gain matrix
+#define LQR_K {-1.0000000000001679, -2.7126628569811633, 42.94618303488281, 5.411763498735041}
+
 void print_states_csv(const state_sequence_t &states)
 {
 	std::cout << "# t,x,v,phi,omega" << std::endl;
@@ -56,8 +59,7 @@ int main(int argc, char *argv[])
 	InvertedPendulum pendulum = InvertedPendulum(PARAM_m, PARAM_M, PARAM_I, PARAM_l, 0.0, state_initial);
 	state_sequence_t states;
 
-	pendulum_state_t K = {-1.0000000000001679, -2.7126628569811633, 42.94618303488281, 5.411763498735041};
-	LQRegulator lqr(K);
+	LQRegulator lqr(LQR_K);
 	
 	double t = 0.0;
 
