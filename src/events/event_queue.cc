@@ -2,7 +2,7 @@
 
 void EventQueue::run(double untilTime)
 {
-    scheduleAt(0, 0.001, untilTime); // Schedule the first cyclic UPDATE event
+    scheduleAt(0, step, untilTime); // Schedule the first cyclic UPDATE event
     while (!events.empty() && events.top().time <= untilTime)
     {
         Event next = events.top();

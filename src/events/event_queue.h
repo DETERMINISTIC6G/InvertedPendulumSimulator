@@ -18,11 +18,13 @@ class EventQueue {
         priority_queue<Event> events;
         unsigned long nextEventId = 0;
         std::vector<std::function<void(Event&)>> callbacks;
+        double step;
              
     public:
         EventQueue() {;};    
         // Constructor to initialize the EventQueue with a CSV file path
-        EventQueue(const string& path) {
+        EventQueue(const string& path, double step = 0.001) {
+            this->step = step;
             string line;
             std::ifstream csvFile;
             csvFile.open(path);
@@ -38,10 +40,11 @@ class EventQueue {
             };    
             while (std::getline(csvFile, line)) {
                 std::stringstream ss(line);
-            
-                std::string sendStr = nextToken(ss);
+
                 std::string pktStr  = nextToken(ss);
-                std::string recvStr = nextToken(ss);            
+                std::string recvStr = nextToken(ss);   
+                std::string sendStr = nextToken(ss);
+                           
                 if (sendStr.empty() || pktStr.empty() || recvStr.empty())
                     continue;            
                 double sendTime = std::stod(sendStr);
