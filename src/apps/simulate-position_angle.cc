@@ -1,6 +1,7 @@
 #include "../inverted_pendulum/inverted_pendulum.h"
 #include "../controller/pid.h"
 #include <iostream>
+#include <fstream>
 
 // Mass of pendulum [kg]
 #define PARAM_m 0.2
@@ -47,7 +48,30 @@
 #define PARAM_V_CLAMP 1.0
 
 // Sampling period [s]
-#define PARAM_TSAMP 0.01
+#define PARAM_TSAMP 0.015 //0.01
+
+
+void print_states_csv_to_file(const state_sequence_t &states, const std::string &filename)
+{
+    std::ofstream out(filename);
+    if (!out.is_open()) {
+        perror("Could not open file");
+		return;
+    }
+    out << "t,x,v,phi,omega" << std::endl;
+    for (const time_state_t &ts : states) {
+        out << ts.first
+            << "," << ts.second[0]
+            << "," << ts.second[1]
+            << "," << ts.second[2] //* (180.0 / M_PI) //Convert to degrees
+            << "," << ts.second[3]
+            << std::endl;
+    }
+    out.close();
+}
+
+
+
 
 void print_states_csv(const state_sequence_t &states)
 {
@@ -120,7 +144,8 @@ int main(int argc, char *argv[])
 		pendulum.set_force(u);
 	}
 	
-	print_states_csv(states);
+	//print_states_csv(states);
+	print_states_csv_to_file(states, "states-three-pids.csv");
 	
 	return 0;
 }
