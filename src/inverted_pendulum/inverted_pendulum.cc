@@ -113,7 +113,8 @@ void InvertedPendulum::simulate(double dt, state_sequence_t &states)
 	Observer observer(states);
 	
 	rk4().do_step(*this, state, t, dt);
-	observer(state, t+dt);
+	
+	observer(state, t);
 
 	t += dt;
 }
