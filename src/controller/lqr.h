@@ -3,7 +3,7 @@
 
 #include "../inverted_pendulum/inverted_pendulum.h"
 
-class LQRegulator
+class LQRegulator : public EventReceiver
 {
 public:
 	/**

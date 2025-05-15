@@ -24,6 +24,7 @@ target_link_libraries(visualization sfml-graphics sfml-window sfml-system)
 add_executable(simulate-event_queue inverted_pendulum/inverted_pendulum.cc inverted_pendulum/inverted_pendulum.h 
                                     apps/simulate-event_queue.cc 
                                     controller/pid.h controller/pid.cc
+                                    controller/lqr.h controller/lqr.cc
                                     events/event_queue.h events/event_queue.cc
                                     )
 
