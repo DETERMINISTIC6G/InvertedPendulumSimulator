@@ -36,3 +36,7 @@ build/
 
 # Visual Studio Code workspace
 .vscode/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
