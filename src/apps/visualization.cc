@@ -2,14 +2,51 @@
 #include <iostream>
 #include <array>
 #include <vector>
+#include <cstring>
 #include <cmath>
 #include <fstream>
 #include <boost/tokenizer.hpp>
 
 #include "../inverted_pendulum/inverted_pendulum.h"
 
-#define FILE_PATH "states.csv"
+//#define FILE_PATH "states-eventqueue-angle-lqr.csv"//"states.csv"
 #define FRAME_RATE 30
+
+#define MAX_STR_LEN 1024
+
+char pathCSVFile[MAX_STR_LEN];
+
+/**
+  * Parse command line arguments as passed to main() and store them in
+  * global variables.
+  */
+ int parse_cmdline_args(int argc, char *argv[])
+ {
+     int opt;
+     
+     memset(pathCSVFile, 0, MAX_STR_LEN);
+ 
+     while ((opt = getopt(argc, argv, "f:")) != -1)
+     {
+         switch (opt)
+         {
+         case 'f':
+            strncpy(pathCSVFile, optarg, MAX_STR_LEN - 1);
+             break;
+         case ':':
+         case '?':
+         default:
+             return -1;
+         }
+     }
+ 
+     if (strlen(pathCSVFile) == 0)
+         return -1;
+ 
+     return 0;
+ }
+
+
 
 bool read_states(const char *path, state_sequence_t &states_vis)
 {
@@ -74,12 +111,18 @@ double to_deg(float rad)
 	return rad*(180.0 / M_PI);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	if (parse_cmdline_args(argc, argv) == -1)
+     {
+         //usage(argv[0]);
+         exit(1);
+     }
+
 	state_sequence_t states;
 	state_sequence_t states_vis;
 
-	if (!read_states(FILE_PATH, states)) {
+	if (!read_states(pathCSVFile, states)) {
 		exit(1);
 	}
 	
