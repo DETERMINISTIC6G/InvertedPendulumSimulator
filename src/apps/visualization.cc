@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 
 	// Load font
 	sf::Font font;
-	if (!font.loadFromFile("../../res/Roboto-Regular.ttf")){//("Hack")) {
+	if (!font.loadFromFile("/usr/share/fonts/truetype/freefont/FreeSansBold.ttf")) {
 		std::cerr << "Failed to load font!\n";
 	}
 
