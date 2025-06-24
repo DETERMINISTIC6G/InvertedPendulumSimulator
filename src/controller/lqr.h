@@ -18,6 +18,8 @@ public:
 	 * @return controller output u
 	 */
 	double control(const pendulum_state_t state);
+
+	double control(const pendulum_state_t state,  double pos);
 	
 private:
 	const pendulum_state_t K;

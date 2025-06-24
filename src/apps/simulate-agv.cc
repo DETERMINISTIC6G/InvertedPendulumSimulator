@@ -20,21 +20,14 @@
 // Length of pendulum to center of mass [m]
 #define PARAM_l 0.3
 // Initial angle of pendulum [rad]
-#define PARAM_angle 0.349 
+#define PARAM_angle 0.0
 // Initial speed of cart [m/s]
 #define PARAM_v 0.0
 // Initial position cart [m]
-#define PARAM_x 5.0
+//#define PARAM_x 0.8
 
 // Duration of a simulation step [s]
 #define PARAM_DT 0.0001
-
-
-// PID controller parameters
-#define PARAM_SETPOINT 0.0
-#define PARAM_KP 10.0
-#define PARAM_KI 1.0
-#define PARAM_KD 1.0
 
 // Angle PID controller parameters
 #define PARAM_KP_ANGLE 10.0
@@ -57,8 +50,8 @@
 // Clamp phi setpoint to +- 20 degree 
 #define PARAM_PHI_CLAMP 0.349
 
-// Clamp v setpoint to +- 1 [m/s] 
-#define PARAM_V_CLAMP 1.0
+// Clamp v setpoint to +- 2.5 [m/s] 
+#define PARAM_V_CLAMP 2.5
 
 
 // LQR gain matrix
@@ -71,6 +64,8 @@
 char pathInputCSVFile[MAX_STR_LEN];
 char pathOutputCSVFile[MAX_STR_LEN];
 int simNumber = 0;
+double d = 1.0;
+double eps = 0.01;
 
 /**
   * Parse command line arguments as passed to main() and store them in
@@ -81,8 +76,9 @@ int parse_cmdline_args(int argc, char *argv[])
     int opt;
 
     memset(pathInputCSVFile, 0, MAX_STR_LEN);
+    memset(pathOutputCSVFile, 0, MAX_STR_LEN);
 
-    while ((opt = getopt(argc, argv, "i:o:n:")) != -1)
+    while ((opt = getopt(argc, argv, "i:o:n:d:e:")) != -1)
     {
         switch (opt)
         {
@@ -95,6 +91,12 @@ int parse_cmdline_args(int argc, char *argv[])
         case 'n':
             simNumber = atoi(optarg);
             break;
+        case 'd':
+            d = atof(optarg);
+            break;
+        case 'e':
+            eps = atof(optarg);
+            break;    
         case ':':
         case '?':
         default:
@@ -140,81 +142,6 @@ void print_states_csv(const state_sequence_t &states)
 	}
 }
 
-void simulate_pid(double untilTime)
-{
-    /*
-	 * Initial pendulum state vector:
-	 * 
-	 * [  x  ]
-	 * [  v  ]
-	 * [ phi ]
-	 * [omega]
-	 */
-	pendulum_state_t state_initial = {0.0, PARAM_v, PARAM_angle, 0.0};
-	InvertedPendulum pendulum = InvertedPendulum(PARAM_m, PARAM_M, PARAM_I, PARAM_l, 0.0, state_initial);
-	state_sequence_t states;
-
-	PIDController pidCtrl(PARAM_KP, PARAM_KI, PARAM_KD);
-
-    // Initialize the queue with events from a CSV file.
-    // Schedule periodic update events.
-    EventQueue eventQueue = EventQueue(pathInputCSVFile, 0.0001);
-
-    vector<double> tmp_u_vec = {};
-    tmp_u_vec.push_back(0.0);
-
-    unsigned long nextSendSeqNumber = 0;  
-    unsigned long currentRcvSeqNumber = 0;
-   
-    // If an update from the controller is available, update system input.
-    // If no update is available, keep the old value of the system input.
-    // Maybe, we have missed some updates, but we can always read the latest update.
-    pendulum.action = [&pendulum, &tmp_u_vec, &states,
-                        &nextSendSeqNumber, &currentRcvSeqNumber](const Event &e) {
-        if (e.type == Event::Type::UPDATE) {
-            printf("PLANT: update at %f, event %lu, f= %f\n", e.time, e.eventId, pendulum.get_force());
-            pendulum.simulate(PARAM_DT, states);          
-           
-        }else if (e.type == Event::Type::RECEIVE) {
-            printf("PLANT: receive at %f, event %lu, SeqNr %lu\n", e.time, e.eventId, e.pktNr);
-            if (e.pktNr >= currentRcvSeqNumber) {
-                pendulum.set_force(tmp_u_vec[e.pktNr]);
-                currentRcvSeqNumber = e.pktNr;
-            }
-        }else if (e.type == Event::Type::SEND) {
-            ++nextSendSeqNumber;
-            printf("PLANT: send at %f, event %lu. next seqNr: %lu\n", e.time, e.eventId, nextSendSeqNumber);
-        }
-    };
-
-    pidCtrl.action = [&pendulum, &pidCtrl, 
-                                    &nextSendSeqNumber, &states, &tmp_u_vec](const Event &e) {
-        if (e.type == Event::Type::SEND) {            
-			// Get pendulum angle, call controller, and set force to cart.
-		    if (!states.empty() && e.pktNr == nextSendSeqNumber - 1) {
-                double phi = states.back().second[2];
-                double t = states.back().first;
-                tmp_u_vec.push_back(-pidCtrl.control(PARAM_SETPOINT, phi, t)); 
-                printf("CONTROLLER: compute next U = %f at %f, event %lu, pctNr: %lu\n", 
-                            tmp_u_vec.back(), e.time, e.eventId, e.pktNr);   
-            }else if (!states.empty()) {
-                printf("CONTROLLER: out-of-order packet, no update at %f, event %lu\n", e.time, e.eventId);
-            }
-            
-        }
-    };
-  
-    // Make sure the order is correct
-    eventQueue.addReceiver(pendulum.action);
-    eventQueue.addReceiver(pidCtrl.action);
-  
-    eventQueue.run(untilTime);
-
-	//print_states_csv(states);
-	print_states_csv_to_file(states, pathOutputCSVFile);
-}
-
-
 
 
 void simulate_position_angle(double untilTime)
@@ -227,7 +154,8 @@ void simulate_position_angle(double untilTime)
 	 * [ phi ]
 	 * [omega]
 	 */
-	pendulum_state_t state_initial = {PARAM_x, PARAM_v, PARAM_angle, 0.0};
+
+	pendulum_state_t state_initial = {d/2 + eps, PARAM_v, PARAM_angle, 0.0};
 	InvertedPendulum pendulum = InvertedPendulum(PARAM_m, PARAM_M, PARAM_I, PARAM_l, 0.0, state_initial);
 	state_sequence_t states;
 
@@ -262,20 +190,19 @@ void simulate_position_angle(double untilTime)
             }
         }else if (e.type == Event::Type::SEND) {
             ++nextSendSeqNumber;
-            printf("PLANT: send at %f, event %lu. next seqNr: %lu\n", e.time, e.eventId, nextSendSeqNumber);
+            printf("PLANT: send at %f, event %lu. next seqNr: %lu. Force: %f\n", e.time, e.eventId, nextSendSeqNumber, pendulum.get_force());
         }
     };
 
     pid_ctrl_angle.action = [&pendulum, &pid_ctrl_angle, &pid_ctrl_x, &pid_ctrl_v,
                                 &nextSendSeqNumber, &states, &tmp_u_vec](const Event &e) {
         if (e.type == Event::Type::SEND) {            
-			// Get pendulum angle, call controller, and set force to cart.
-                   
+			// Get pendulum angle, call controller, and set force to cart.       
 		    if (!states.empty() && e.pktNr == nextSendSeqNumber - 1) {
                 // Drive cart towards position setpoint by controlling the speed of the cart.
                 double t = states.back().first;   
                 double x = states.back().second[0];
-                double v_setpoint = -pid_ctrl_x.control(PARAM_SETPOINT_X, x, t);
+                double v_setpoint = -pid_ctrl_x.control(10 * std::sin(0.2*t) + d/2, x, t);
                 // Clamp v to +- PARAM_V_CLAMP.
                 if (v_setpoint >  PARAM_V_CLAMP)
                     v_setpoint = PARAM_V_CLAMP;
@@ -311,80 +238,6 @@ void simulate_position_angle(double untilTime)
 }
 
 
-void simulate_lqr(double untilTime)
-{
-
-    /*
-	 * Initial pendulum state vector:
-	 * 
-	 * [  x  ]
-	 * [  v  ]
-	 * [ phi ]
-	 * [omega]
-	 */
-	pendulum_state_t state_initial = {0.0, PARAM_v, PARAM_angle, 0.0};
-	InvertedPendulum pendulum = InvertedPendulum(PARAM_m, PARAM_M, PARAM_I, PARAM_l, 0.0, state_initial);
-	state_sequence_t states;
-
-	LQRegulator lqr(LQR_K_ANGLE);
-
-    // Initialize the queue with events from a CSV file.
-    // Schedule periodic update events.
-    EventQueue eventQueue = EventQueue(pathInputCSVFile, 0.0001);
-
-    vector<double> tmp_u_vec = {};
-    tmp_u_vec.push_back(0.0);
-
-    unsigned long nextSendSeqNumber = 0;  
-    unsigned long currentRcvSeqNumber = 0;
-   
-    // If an update from the controller is available, update system input.
-    // If no update is available, keep the old value of the system input.
-    // Maybe, we have missed some updates, but we can always read the latest update.
-    pendulum.action = [&pendulum, &tmp_u_vec, &states,
-                        &nextSendSeqNumber, &currentRcvSeqNumber](const Event &e) {
-        if (e.type == Event::Type::UPDATE) {
-            printf("PLANT: update at %f, event %lu, f= %f\n", e.time, e.eventId, pendulum.get_force());
-            pendulum.simulate(PARAM_DT, states);          
-           
-        }else if (e.type == Event::Type::RECEIVE) {
-            printf("PLANT: receive at %f, event %lu, seqNr %lu\n", e.time, e.eventId, e.pktNr);
-            if (e.pktNr >= currentRcvSeqNumber) {
-                pendulum.set_force(tmp_u_vec[e.pktNr]);
-                currentRcvSeqNumber = e.pktNr;
-            }
-        }else if (e.type == Event::Type::SEND) {
-            ++nextSendSeqNumber;
-            printf("PLANT: send at %f, event %lu. next seqNr: %lu\n", e.time, e.eventId, nextSendSeqNumber);
-        }
-    };
-
-    lqr.action = [&pendulum, &lqr, 
-                                    &nextSendSeqNumber, &states, &tmp_u_vec](const Event &e) {
-        if (e.type == Event::Type::SEND) {            
-			// Get pendulum angle, call controller, and set force to cart.
-		    if (!states.empty() && e.pktNr == nextSendSeqNumber - 1) {    
-                tmp_u_vec.push_back(lqr.control(states.back().second)); 
-                printf("CONTROLLER: compute next U = %f at %f, event %lu, pctNr: %lu\n", 
-                            tmp_u_vec.back(), e.time, e.eventId, e.pktNr);   
-            }else if (!states.empty()) {
-                printf("CONTROLLER: out-of-order packet, no update at %f, event %lu\n", e.time, e.eventId);
-            }
-            
-        }
-    };
-  
-    // Make sure the order is correct
-    eventQueue.addReceiver(pendulum.action);
-    eventQueue.addReceiver(lqr.action);
-  
-    eventQueue.run(untilTime);
-
-	//print_states_csv(states);
-	print_states_csv_to_file(states, pathOutputCSVFile);
-}
-
-
 
 void simulate_lqr_position_angle(double untilTime)
 {
@@ -396,7 +249,7 @@ void simulate_lqr_position_angle(double untilTime)
 	 * [ phi ]
 	 * [omega]
 	 */
-	pendulum_state_t state_initial = {PARAM_x, PARAM_v, PARAM_angle, 0.0};
+	pendulum_state_t state_initial = {d/2 + eps, PARAM_v, PARAM_angle, 0.0};
 	InvertedPendulum pendulum = InvertedPendulum(PARAM_m, PARAM_M, PARAM_I, PARAM_l, 0.0, state_initial);
 	state_sequence_t states;
 
@@ -435,11 +288,11 @@ void simulate_lqr_position_angle(double untilTime)
 
     lqr.action = [&pendulum, &lqr,
                                 &nextSendSeqNumber, &states, &tmp_u_vec](const Event &e) {
-        if (e.type == Event::Type::SEND) {            
-			        
+        if (e.type == Event::Type::SEND) {                    
 		    if (!states.empty() && e.pktNr == nextSendSeqNumber - 1) {
-                
-                tmp_u_vec.push_back(lqr.control(states.back().second));
+                //with position control
+                double pos = 10 * std::sin(0.2*states.back().first) + d/2; 
+                tmp_u_vec.push_back(lqr.control(states.back().second, pos));
                 printf("CONTROLLER: compute next U = %f at %f, event %lu, pctNr: %lu\n", 
                                     tmp_u_vec.back(), e.time, e.eventId, e.pktNr);                                    
             }else if (!states.empty()) {
@@ -460,34 +313,23 @@ void simulate_lqr_position_angle(double untilTime)
 
 
 
-
 int main(int argc, char *argv[])
 {
-	if (parse_cmdline_args(argc, argv) == -1)
+    if (parse_cmdline_args(argc, argv) == -1)
     {
         exit(1);
     }
     
     switch (simNumber)
-    {
+    {        
         case 1:
-            simulate_pid(60.0);
-            break;
-        case 2:
             simulate_position_angle(60.0);
             break;
-        case 3:
-            simulate_lqr(60.0);
-            break;
-        case 4:
+        case 2:
             simulate_lqr_position_angle(60.0);
             break;
         default:
-            std::cout << "Select a simulation (1 to 4):\n"
-            << " 1 - PID (angle only)\n"
-            << " 2 - PID (angle and position)\n"
-            << " 3 - LQR (angle only)\n"
-            << " 4 - LQR (angle and position)\n";
+            std::cout << "Select a simulation 1 (PID) or 2 (LQR)." << std::endl;
             return -1;
     }
 
