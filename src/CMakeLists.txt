@@ -17,6 +17,13 @@ add_executable(simulate-lqr inverted_pendulum/inverted_pendulum.cc inverted_pend
 
 add_executable(simulate-lqr-position_angle inverted_pendulum/inverted_pendulum.cc inverted_pendulum/inverted_pendulum.h apps/simulate-lqr-position_angle.cc controller/lqr.h controller/lqr.cc)
 
+add_executable(simulate-agv inverted_pendulum/inverted_pendulum.cc inverted_pendulum/inverted_pendulum.h 
+                                    apps/simulate-agv.cc 
+                                    controller/pid.h controller/pid.cc
+                                    controller/lqr.h controller/lqr.cc
+                                    events/event_queue.h events/event_queue.cc
+                                    )
+
 find_package(SFML COMPONENTS graphics window system REQUIRED)
 add_executable(visualization apps/visualization.cc inverted_pendulum/inverted_pendulum.h)
 target_link_libraries(visualization sfml-graphics sfml-window sfml-system)
@@ -27,4 +34,3 @@ add_executable(simulate-event_queue inverted_pendulum/inverted_pendulum.cc inver
                                     controller/lqr.h controller/lqr.cc
                                     events/event_queue.h events/event_queue.cc
                                     )
-
