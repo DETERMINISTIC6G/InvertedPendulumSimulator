@@ -15,9 +15,7 @@ public:
 
 public:
     EventReceiver() = default;
-    //virtual void handleEvent() = 0;
-    virtual ~EventReceiver() = default;   
-    //virtual void shutdown() = 0;
+    virtual ~EventReceiver() = default;
 };
 
 #endif // EVENT_RECEIVER_H

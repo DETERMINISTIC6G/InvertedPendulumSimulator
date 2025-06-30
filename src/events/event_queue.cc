@@ -42,7 +42,7 @@ void EventQueue::scheduleAt(double startTime, double step, double untilTime)
                  if (nextTime <= untilTime)
                  {
                      schedule(0, nextTime, Event::Type::UPDATE, evt.action); // Re-schedule
-                     ;                                                       // printf("UPDATE at %f , event %lu \n", evt.time, evt.eventId);
+                     ;// printf("UPDATE at %f , event %lu \n", evt.time, evt.eventId);
                  }
              });
 }

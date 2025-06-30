@@ -17,7 +17,6 @@ double LQRegulator::control(const pendulum_state_t state)
 double LQRegulator::control(const pendulum_state_t state, double pos)
 {
 	// u = -K*state + K[0]*reference_position
-	//double pos = 10 * std::sin(0.2*t) + d/2;
 	double u = -(K[0]*state[0] - K[0]*pos + K[1]*state[1] + K[2]*state[2] + K[3]*state[3]);
 
 	return u;

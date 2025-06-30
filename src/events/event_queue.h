@@ -67,7 +67,6 @@ class EventQueue {
         bool empty() const;   
         double nextTime() const;
         void addReceiver(std::function<void(const Event&)> cb);
-        //void stop();
         ~EventQueue() {;}
 
     private:

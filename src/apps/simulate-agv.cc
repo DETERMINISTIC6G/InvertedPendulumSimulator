@@ -23,8 +23,6 @@
 #define PARAM_angle 0.0
 // Initial speed of cart [m/s]
 #define PARAM_v 0.0
-// Initial position cart [m]
-//#define PARAM_x 0.8
 
 // Duration of a simulation step [s]
 #define PARAM_DT 0.0001
@@ -44,9 +42,6 @@
 #define PARAM_KI_V 0.0
 #define PARAM_KD_V 0.0
 
-// Setpoint of the position
-#define PARAM_SETPOINT_X 0.0
-
 // Clamp phi setpoint to +- 20 degree 
 #define PARAM_PHI_CLAMP 0.349
 
@@ -57,15 +52,31 @@
 // LQR gain matrix
 #define LQR_K {-3.162277660168483, -6.105688949485788, 49.16351188321586, 7.204143097154165}
 
-#define LQR_K_ANGLE {-1.0000000000001679, -2.7126628569811633, 42.94618303488281, 5.411763498735041}
-
 #define MAX_STR_LEN 1024
 
 char pathInputCSVFile[MAX_STR_LEN];
 char pathOutputCSVFile[MAX_STR_LEN];
+
 int simNumber = 0;
 double d = 1.0;
-double eps = 0.01;
+double eps = 0.05;
+
+/**
+ * Print usage information for the command line arguments.
+ */
+void usage(const char *progname)
+{
+    fprintf(stderr,
+        "Usage: %s -i <input.csv> -o <output.csv> -n <sim_number> -d <distance> -e <epsilon>\n"
+        "Options:\n"
+        "  -i <input.csv>     Path to the input CSV file\n"
+        "  -o <output.csv>    Path to the output CSV file\n"
+        "  -n <sim_number>    Simulation number (integer). Select a simulation 1 (PID) or 2 (LQR).\n"
+        "  -d <distance>      Parameter d (floating-point), distance between two AGVs, default: 1.0m\n"
+        "  -e <epsilon>       Initial position error (floating-point), default: 0.05m\n",
+        progname);
+}
+
 
 /**
   * Parse command line arguments as passed to main() and store them in
@@ -144,7 +155,7 @@ void print_states_csv(const state_sequence_t &states)
 
 
 
-void simulate_position_angle(double untilTime)
+void simulate_pid_position_angle(double untilTime)
 {
     /*
 	 * Initial pendulum state vector:
@@ -165,10 +176,10 @@ void simulate_position_angle(double untilTime)
 
     // Initialize the queue with events from a CSV file.
     // Schedule periodic update events.
-    EventQueue eventQueue = EventQueue(pathInputCSVFile, 0.0001);
+    EventQueue eventQueue = EventQueue(pathInputCSVFile, PARAM_DT);
 
-    vector<double> tmp_u_vec = {};                           
-    tmp_u_vec.push_back(0.0);
+    vector<double> u_vec = {};                           
+    u_vec.push_back(0.0);
     
     unsigned long nextSendSeqNumber = 0;  
     unsigned long currentRcvSeqNumber = 0;
@@ -176,7 +187,7 @@ void simulate_position_angle(double untilTime)
     // If an update from the controller is available, update system input.
     // If no update is available, keep the old value of the system input.
     // Maybe, we have missed some updates, but we can always read the latest update.
-    pendulum.action = [&pendulum, &tmp_u_vec, &states,
+    pendulum.action = [&pendulum, &u_vec, &states,
                         &nextSendSeqNumber, &currentRcvSeqNumber](const Event &e) {
         if (e.type == Event::Type::UPDATE) {
             printf("PLANT: update at %f, event %lu, f= %f\n", e.time, e.eventId, pendulum.get_force());
@@ -185,7 +196,7 @@ void simulate_position_angle(double untilTime)
         }else if (e.type == Event::Type::RECEIVE) {
             printf("PLANT: receive at %f, event %lu, seqNr %lu\n", e.time, e.eventId, e.pktNr);
             if (e.pktNr >= currentRcvSeqNumber) {
-                pendulum.set_force(tmp_u_vec[e.pktNr]);
+                pendulum.set_force(u_vec[e.pktNr]);
                 currentRcvSeqNumber = e.pktNr;
             }
         }else if (e.type == Event::Type::SEND) {
@@ -195,7 +206,7 @@ void simulate_position_angle(double untilTime)
     };
 
     pid_ctrl_angle.action = [&pendulum, &pid_ctrl_angle, &pid_ctrl_x, &pid_ctrl_v,
-                                &nextSendSeqNumber, &states, &tmp_u_vec](const Event &e) {
+                                &nextSendSeqNumber, &states, &u_vec](const Event &e) {
         if (e.type == Event::Type::SEND) {            
 			// Get pendulum angle, call controller, and set force to cart.       
 		    if (!states.empty() && e.pktNr == nextSendSeqNumber - 1) {
@@ -218,9 +229,9 @@ void simulate_position_angle(double untilTime)
                     phi_setpoint = -PARAM_PHI_CLAMP;
                                
                 double phi = states.back().second[2];
-                tmp_u_vec.push_back(-pid_ctrl_angle.control(phi_setpoint, phi, t));
+                u_vec.push_back(-pid_ctrl_angle.control(phi_setpoint, phi, t));
                 printf("CONTROLLER: compute next U = %f at %f, event %lu, pctNr: %lu\n", 
-                    tmp_u_vec.back(), e.time, e.eventId, e.pktNr);                                    
+                    u_vec.back(), e.time, e.eventId, e.pktNr);                                    
             }else if (!states.empty()) {
                 printf("CONTROLLER: Out-of-order packet, no update at %f, event %lu\n", e.time, e.eventId);
             }          
@@ -233,7 +244,6 @@ void simulate_position_angle(double untilTime)
   
     eventQueue.run(untilTime);
 
-	//print_states_csv(states);
 	print_states_csv_to_file(states, pathOutputCSVFile);
 }
 
@@ -257,10 +267,10 @@ void simulate_lqr_position_angle(double untilTime)
 
     // Initialize the queue with events from a CSV file.
     // Schedule periodic update events.
-    EventQueue eventQueue = EventQueue(pathInputCSVFile, 0.0001);
+    EventQueue eventQueue = EventQueue(pathInputCSVFile, PARAM_DT);
 
-    vector<double> tmp_u_vec = {};
-    tmp_u_vec.push_back(0.0);
+    vector<double> u_vec = {};
+    u_vec.push_back(0.0);
 
     unsigned long nextSendSeqNumber = 0;  
     unsigned long currentRcvSeqNumber = 0;
@@ -268,7 +278,7 @@ void simulate_lqr_position_angle(double untilTime)
     // If an update from the controller is available, update system input.
     // If no update is available, keep the old value of the system input.
     // Maybe, we have missed some updates, but we can always read the latest update.
-    pendulum.action = [&pendulum, &tmp_u_vec, &states,
+    pendulum.action = [&pendulum, &u_vec, &states,
                         &nextSendSeqNumber, &currentRcvSeqNumber](const Event &e) {
         if (e.type == Event::Type::UPDATE) {
             printf("PLANT: update at %f, event %lu, f= %f\n", e.time, e.eventId, pendulum.get_force());
@@ -277,7 +287,7 @@ void simulate_lqr_position_angle(double untilTime)
         }else if (e.type == Event::Type::RECEIVE) {
             printf("PLANT: receive at %f, event %lu, seqNr %lu\n", e.time, e.eventId, e.pktNr);
             if (e.pktNr >= currentRcvSeqNumber) {
-                pendulum.set_force(tmp_u_vec[e.pktNr]);
+                pendulum.set_force(u_vec[e.pktNr]);
                 currentRcvSeqNumber = e.pktNr;
             }
         }else if (e.type == Event::Type::SEND) {
@@ -287,14 +297,14 @@ void simulate_lqr_position_angle(double untilTime)
     };
 
     lqr.action = [&pendulum, &lqr,
-                                &nextSendSeqNumber, &states, &tmp_u_vec](const Event &e) {
+                                &nextSendSeqNumber, &states, &u_vec](const Event &e) {
         if (e.type == Event::Type::SEND) {                    
 		    if (!states.empty() && e.pktNr == nextSendSeqNumber - 1) {
                 //with position control
                 double pos = 10 * std::sin(0.2*states.back().first) + d/2; 
-                tmp_u_vec.push_back(lqr.control(states.back().second, pos));
+                u_vec.push_back(lqr.control(states.back().second, pos));
                 printf("CONTROLLER: compute next U = %f at %f, event %lu, pctNr: %lu\n", 
-                                    tmp_u_vec.back(), e.time, e.eventId, e.pktNr);                                    
+                                    u_vec.back(), e.time, e.eventId, e.pktNr);                                    
             }else if (!states.empty()) {
                 printf("CONTROLLER: out-of-order packet, no update at %f, event %lu\n", e.time, e.eventId);
             }          
@@ -307,23 +317,22 @@ void simulate_lqr_position_angle(double untilTime)
   
     eventQueue.run(untilTime);
 
-	//print_states_csv(states);
 	print_states_csv_to_file(states, pathOutputCSVFile);
 }
-
 
 
 int main(int argc, char *argv[])
 {
     if (parse_cmdline_args(argc, argv) == -1)
     {
+        usage(argv[0]);
         exit(1);
     }
     
     switch (simNumber)
     {        
         case 1:
-            simulate_position_angle(60.0);
+            simulate_pid_position_angle(60.0);
             break;
         case 2:
             simulate_lqr_position_angle(60.0);
