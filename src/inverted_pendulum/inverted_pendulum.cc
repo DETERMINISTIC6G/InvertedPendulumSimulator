@@ -100,7 +100,7 @@ void InvertedPendulum::simulate(double d, double dt, state_sequence_t &states)
 {
 	Observer observer(states);
 	
-	integrate_const(rk4(), *this, state, t, d, dt, observer);
+	integrate_const(rk4(), *this, state, t, t+d, dt, observer);
 
 	// Simulation ends at last timestamp of last state.
 	// Simulation might not end exactly at time t+d, but
