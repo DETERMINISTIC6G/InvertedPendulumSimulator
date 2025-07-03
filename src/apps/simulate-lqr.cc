@@ -66,8 +66,7 @@ int main(int argc, char *argv[])
 	while (t < PARAM_D) {
 		// Simulate pendulum until next sampling time.
 		// Add simulated states to sequence of states.
-		double dsim = t+PARAM_TSAMP;
-		pendulum.simulate(dsim, PARAM_DT, states);
+		pendulum.simulate(PARAM_TSAMP, PARAM_DT, states);
 		t = states.back().first; // current time of simulation is time of last recorded state
 		// Get pendulum angle, call controller, and set force to cart.
 		double phi = states.back().second[2];
