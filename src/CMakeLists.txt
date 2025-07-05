@@ -34,3 +34,9 @@ add_executable(simulate-event_queue inverted_pendulum/inverted_pendulum.cc inver
                                     controller/lqr.h controller/lqr.cc
                                     events/event_queue.h events/event_queue.cc
                                     )
+
+find_package(Threads REQUIRED)
+add_executable(plant apps/plant.cc netutils/socket_utils.cc netutils/socket_utils.h apps/marshaling.h apps/marshaling.cc)
+add_executable(controller_pid apps/controller_pid.cc netutils/socket_utils.cc netutils/socket_utils.h apps/marshaling.cc apps/marshaling.h)
+target_link_libraries(plant source sfml-graphics sfml-window sfml-system Threads::Threads)
+target_link_libraries(controller_pid source)
