@@ -38,10 +38,20 @@ The code is structured as follows:
 * Directory `src/controller`: implementations of different controllers (PID and LQR).
 * Directory `src/inverted_pendulum`: implementation of the physics simulation of the pendulum.
 * Further directories in folder `src`: various helper functions
+* Directory `scripts`: different script, e.g., to calculate the optimal gain matrix for LQR with Mathematica.
+* Directory `jupyter`: Jupyter notebooks for the analysis of results. 
 
 In more detail, the following applications are included in folder `src/app`:
 
-TODO
+* `simulate-lqr`: 
+* `simulate-pid`: 
+* `simulate-lqr-position_angle`: 
+* `simulate-position_angle`: 
+* `simulate-event_queue`: 
+* `simulate-agv`:
+* `ncs-plant` / `ncs-controller`: 
+* `visualization`: visualization of recorded pendulum state (animation of pendulum)
+* `visualization-dualview`: visualization of recorded pendulum state (animation of pendulum), showing two pendulums simultaneously for visual comparison.
 
 # Acknowledgements
 
