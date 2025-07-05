@@ -32,7 +32,16 @@ Evaluations and results produced with this simulation framework, we refer to [De
 
 # Overview of the Code
 
-t.b.d.
+The code is structured as follows:
+
+* Directory `src/app`: various applications for simulating the pendulum (angle or angle & postion) and visualizing the pendulum movement in real-time. Best place to start to figure out how to use the implementation. The different applications are described further below. 
+* Directory `src/controller`: implementations of different controllers (PID and LQR).
+* Directory `src/inverted_pendulum`: implementation of the physics simulation of the pendulum.
+* Further directories in folder `src`: various helper functions
+
+In more detail, the following applications are included in folder `src/app`:
+
+TODO
 
 # Acknowledgements
 
