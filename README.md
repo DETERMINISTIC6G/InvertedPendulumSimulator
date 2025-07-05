@@ -1,38 +1,45 @@
-This repository is a fork of the [InvertedPendulum simulator](https://github.com/jasleon/Inverted-Pendulum) developed by Antonio Sanchez.
+A simulator of an inverted pendulum for evaluating the performance of networked control systems whose communication is subject to packet delay. 
 
-This implementation was extended in the context of the [DETERMINISTIC6G](https://deterministic6g.eu/) research project to support the evaluation of networked control systems communicating over Time-Sensitive Networks (TSN) including, in particular, wireless 5G/6G TSN bridges.
-Typically, such wireless TSN bridges have fundamentally different characteristics with respect to port-to-port (bridge) delay (stochastic heavy-tailed delay, orders of magnitude higher than for wired TSN bridges). 
+This simulator was implemented as part of the [DETERMINISTIC6G](https://deterministic6g.eu/) research project to support the evaluation of networked control systems communicating over Time-Sensitive Networks (TSN) including wireless 5G/6G TSN bridges.
+Typically, such wireless TSN bridges have fundamentally different characteristics with respect to port-to-port (bridge) delay (stochastic heavy-tailed delay distribution, orders of magnitude higher than for wired TSN bridges). 
 Since delay is critical for control systems, we want to evaluate the Quality of Control (QoC) if the networked control system is exposed to this characteristic network delay.
 
-To enable such evaluations, we modified the original implementation of the inverted pendulum as follows:
+# Background
 
-* We separate the inverted pendulum (plant) from the controller (hosted for instance in an edge cloud environment) and connect them through a UDP packet stream to close the control loop over the network. 
-* We then either use network emulation or simulation to emulate or simulate the characteristic network delay induced by wireless TSN bridges, respectively. 
+An inverted pendulum is a textbook example of a control system. As depicted in the figure below, it consists of an inverted pendulum mounted on a cart.
+The goal is to keep the pendulum in an upright position, and optionally to also control the position of the cart with respect to a reference position.
+Obviously, in contrast to an ordinary non-inverted pendulum, the inverted pendulum is an open-loop unstable system since the pendulum will tip over without control input.
+To prevent the pendulum from tipping over, the cart can be accelerated by a force onto the cart.
+This acceleration will create a torque onto the pendulum, accelerating the pendulum around its axis.
 
-For network emulation, we use the [Network Delay Emulator](https://github.com/DETERMINISTIC6G/NetworkDelayEmulator) developed by the DETERMINISTIC6G project.
+```
+                       /
+                      / inverted pendulum at angle Theta
+                     /
+                ----O----
+               |  cart   |----> force F
+                -O-----O-
+---------------------------------------------------------->
+track                                                    x
+```
 
-For network simulation, we use the [DETERMINISTIC6G extensions](https://github.com/DETERMINISTIC6G/deterministic6g) of the OMNeT++/INET network simulator. 
+We are interested in controlling the pendulum over a communication network from a remote controller, i.e., the state of the pendulum is sampled at the mobile device (pendulum), sent over a communication network to the remote controller calculating the control input (force F), which is then sent back to the mobile device and applied to the cart.
+Both, samples and control input exchanged between plant and controller, might suffer a packet delay depending on the characteristic packet delay of the communication network.
+On the one hand. our pendulum simulator supports the integration with a real communication network or emulated network, e.g., the [network delay emulator](https://github.com/DETERMINISTIC6G/NetworkDelayEmulator) also developed by the DETERMINISTIC6G project.
+On the other hand, the delay of packets can be pre-computed, e.g., using the [DETERMINISTIC6G simulation framework](https://github.com/DETERMINISTIC6G/deterministic6g), and then fed into the physical pendulum simulation through a file.
 
-Both, simulations and emulations, utilize the [delay measurements](https://github.com/DETERMINISTIC6G/deterministic6g_data) from real 5G networks of the DETERMINISTIC6G project.  
+Evaluations and results produced with this simulation framework, we refer to [Deliverable D4.5](https://deterministic6g.eu/index.php/library-m/deliverables) of the DETERMINISTIC6G project. 
 
-In the following, we describe how to use the distributed inverted pendulum together with network emulation or simulation.
-We focus this description on the extensions made to the original inverted pendulum implementation (without distributed implementation).
-If you are interested in the original, non-distributed pendulum, you can find the original README file in a [separate file](), or in the [original repository](https://github.com/jasleon/Inverted-Pendulum).
-
-# Network Emulation & Inverted Pendulum
-
-t.b.d.
-
-# Network Simulation & Inverted Pendulum
+# Overview of the Code
 
 t.b.d.
 
 # Acknowledgements
-
-InvertedPendulum was originally developed by Antonio Sanchez ([original repository](https://github.com/jasleon/Inverted-Pendulum)).
 
 The extensions in this repository for networked control systems have been made in the context of the DETERMINISTIC6G project, which has received funding from the European Union's Horizon Europe research and innovation programme under grant agreement No. 101096504.
 
 [DETERMINISTIC6G Project Website](https://deterministic6g.eu/).
 
 DETERMINISTIC6G e-mail: coordinator@deterministic6g.eu
+
+The visualization of the pendulum is based on code originally developed by [Antonio Sanchez](https://github.com/jasleon/Inverted-Pendulum).
