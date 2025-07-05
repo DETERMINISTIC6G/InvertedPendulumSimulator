@@ -14,6 +14,7 @@
 
 #include "../inverted_pendulum/inverted_pendulum.h"
 #include "../controller/lqr.h"
+#include "../netutils/socket_utils.h"
 #include "marshaling.h"
 
 #define MAX_STR_LEN 1024
@@ -82,7 +83,11 @@ int main(int argc, char *argv[])
 		die(1);
 	}	
 
-	// TODO: Create server socket for communication with plant.
+	// Create server socket for communication with plant.
+	if (datagram_server_sockets(NULL, ctrl_service, AF_UNSPEC, 0, &sock, 1) != 1) {
+                perror("Could not create socket");
+                die(1);
+        }
 	
 	// Create LQR.
 	LQRegulator lqr(LQR_K);

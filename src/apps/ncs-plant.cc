@@ -44,6 +44,7 @@
 #include <sys/socket.h>
 
 #include "../inverted_pendulum/inverted_pendulum.h"
+#include "../netutils/socket_utils.h"
 #include "marshaling.h"
 
 #define MAX_STR_LEN 1024
@@ -191,8 +192,13 @@ int main(int argc, char *argv[])
 		die(1);
 	}
 
-	// TODO: Create client socket for communicating with controller.
-
+	//Create client socket for communicating with controller.
+	sock = datagram_client_socket(ctrl_host, ctrl_service);
+        if (sock == -1) {
+                perror("Could not create socket");
+                die(1);
+        }
+	
 	// Create thread receiving updates from controller.
 	if (pthread_create(&thread, NULL, receiver_thread_run, NULL)) {
 		perror("Could not create thread");
