@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
                 std::cerr << "Failed to load font!\n";
         }
 
-        // Create text to display simulation time
+        // Create text to display heading
         sf::Text text1;
         text1.setFont(font);
         text1.setCharacterSize(24);
@@ -242,11 +242,6 @@ int main(int argc, char *argv[])
                 } while (time_us < frame_time_us);
 
                 // Update the simulation
-                /*
-                float time_sec = time.asSeconds();
-                std::string msg = std::to_string(time_sec);
-                text.setString("Time   " + msg.substr(0, msg.find('.') + 2));
-                */
 
                 float cart_x1 = time_state1.second[0];
                 float pole_angle_deg1 = to_deg(time_state1.second[2]);

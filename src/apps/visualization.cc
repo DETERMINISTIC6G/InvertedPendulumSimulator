@@ -139,14 +139,6 @@ int main(int argc, char *argv[])
                 std::cerr << "Failed to load font!\n";
         }
 
-        // Create text to display simulation time
-        sf::Text text;
-        text.setFont(font);
-        text.setCharacterSize(24);
-        const sf::Color grey = sf::Color(0x7E, 0x7E, 0x7E);
-        text.setFillColor(grey);
-        text.setPosition(480.0F, 360.0F);
-
         // Create a track for the cart
         sf::RectangleShape track(sf::Vector2f(1024.0F, 2.0F));
         track.setOrigin(512.0F, 1.0F);
@@ -197,7 +189,6 @@ int main(int argc, char *argv[])
                 // Update the simulation
                 float time_sec = time.asSeconds();
                 std::string msg = std::to_string(time_sec);
-                text.setString("Time   " + msg.substr(0, msg.find('.') + 2));
 
                 float cart_x = time_state.second[0];
                 float pole_angle_deg = to_deg(time_state.second[2]);
@@ -211,7 +202,6 @@ int main(int argc, char *argv[])
                 window.draw(track);
                 window.draw(cart);
                 window.draw(pole);
-                window.draw(text);
                 window.display();
         }
 

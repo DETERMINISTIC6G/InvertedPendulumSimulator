@@ -12,12 +12,12 @@
 #include <sys/types.h>
 #include <stdint.h>
 
-ssize_t marshaling_state(uint8_t *data, size_t max_data_size, uint64_t time, double angle); 
+ssize_t marshaling_state(uint8_t *data, size_t max_data_size, uint64_t time, double angle, double omega, double x, double v); 
 
-bool demarshaling_state(const uint8_t *data, size_t data_size, uint64_t *time, double *angle);
+bool demarshaling_state(const uint8_t *data, size_t data_size, uint64_t &time, double &angle, double &omega, double &x, double &v);
 
 ssize_t marshaling_update(uint8_t *data, size_t max_data_size, uint64_t time, double u); 
 
-bool demarshaling_update(const uint8_t *data, size_t data_size, uint64_t *time, double *u);
+bool demarshaling_update(const uint8_t *data, size_t data_size, uint64_t &time, double &u);
 
 #endif
