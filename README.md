@@ -43,15 +43,72 @@ The code is structured as follows:
 
 In more detail, the following applications are included in folder `src/app`:
 
-* `simulate-lqr`: 
-* `simulate-pid`: 
-* `simulate-lqr-position_angle`: 
-* `simulate-position_angle`: 
-* `simulate-event_queue`: 
-* `simulate-agv`:
-* `ncs-plant` / `ncs-controller`: 
+* `simulate-lqr`: showcase how to use pendulum and LQR to control angle (no network delay).
+* `simulate-pid`: showcase how to use pendulum and PID controller to control angle (no network delay).
+* `simulate-lqr-position_angle`: showcase how to use pendulum and LQR to control position and angle (no network delay).
+* `simulate-position_angle`: showcase how to use pendulum and PID controller to control position and angle (no network delay).
+* `simulate-event_queue`: TODO 
+* `simulate-agv`: TODO
+* `ncs-plant` / `ncs-controller`: networked control system with real network or emulated network (plant and controller communicating via sockets). Can be used together with [DETERMINISTIC6G network delay emulator](https://github.com/DETERMINISTIC6G/NetworkDelayEmulator) to emulate characteristic network delay between plant and controller.
 * `visualization`: visualization of recorded pendulum state (animation of pendulum)
 * `visualization-dualview`: visualization of recorded pendulum state (animation of pendulum), showing two pendulums simultaneously for visual comparison.
+
+# Building the Apps
+
+## Prerequisites
+
+The visualization apps require the SFML library, which, for instance, can be installed on Debian systems as follows:
+
+```(console)
+$ sudo apt install libsfml-dev
+```
+Moreover, the boost odeint library is required :
+
+```(console)
+$ sudo apt install libboost-dev
+```
+
+## Building
+
+The typical cmake process:
+
+```(console)
+$ cd src
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+``` 
+
+# File Formats
+
+## Packet Trace
+
+The simulator apps `simulate-event_queue` and `simulate-agv` read a packet trace from a file, including the timestamps of packets (sensor samples) sent by the plant, time of samples received by the controller, and time of control input (u = force onto cart) arriving at the plant.
+
+The file format is CSV, with the following columns:
+
+```
+TODO
+```
+
+* TODO
+
+## State Trace
+
+The simulation apps write a trace of the state of the pendulum to a file, which can be used for visualization or analysis.
+
+The file format is CSV, with the following columns:
+
+```
+# t,x,v,phi,omega
+```
+
+* t: timestamp of state [s]
+* x: position of cart [m]
+* v: velocity of cart [m/s]
+* phi: angle of pole [rad]
+* omega: angular velocity of pole [rad/s]
 
 # Acknowledgements
 
