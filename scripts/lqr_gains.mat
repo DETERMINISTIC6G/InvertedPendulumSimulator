@@ -1,0 +1,23 @@
+(* Execute with: wolframscript -file lqr_gains.mat *)
+
+(* State-space model equations *)
+A = {{0,1,0,0}, {0,0,2.674555,0}, {0,0,0,1}, {0,0,31.203136,0}}
+B = {{0},{1.818182}, {0}, {4.545455}}
+
+(* Minimizing position and/or speed and/or angle and/or angular speed (and if you like combination of these) *)
+(* Optimization focused on angle *)
+(*
+Q = {{0.01,0,0,0}, {0,0,0,0}, {0,0,10,0}, {0,0,0,0}}
+*)
+
+(* Optimize both, position and angle *)
+Q = {{0.1,0,0,0}, {0,0.1,0,0}, {0,0,10,0}, {0,0,0,0}}
+
+(* Force not very important to optimize *)
+R = {{0.01}}
+
+P = RiccatiSolve[{A,B},{Q,R}]
+
+K = Inverse[R].Transpose[B].P
+
+Print["K = ", K];
