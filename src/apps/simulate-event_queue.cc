@@ -44,6 +44,7 @@
 #define PARAM_KI 1.0
 #define PARAM_KD 1.0
 
+// LQR gain matrix
 #define LQR_K_ANGLE                                                                                                    \
         {                                                                                                              \
                 -1.0000000000001679, -2.7126628569811633, 42.94618303488281, 5.411763498735041                         \
