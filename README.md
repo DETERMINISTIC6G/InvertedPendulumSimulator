@@ -47,8 +47,9 @@ In more detail, the following applications are included in folder `src/app`:
 * `simulate-pid`: showcase how to use pendulum and PID controller to control angle (no network delay).
 * `simulate-lqr-position_angle`: showcase how to use pendulum and LQR to control position and angle (no network delay).
 * `simulate-position_angle`: showcase how to use pendulum and PID controller to control position and angle (no network delay).
-* `simulate-event_queue`: TODO 
-* `simulate-agv`: TODO
+* `simulate-event_queue`: showcase how to use the control system simulation to control angle.
+The physical system simulation expects, as input, a packet trace from a network simulation, which simulates characteristic 5G network delays between the plant and the controller.
+* `simulate-agv`: showcase how to use the control system simulation to control position and angle, where the position varies over time according to a predefined trajectory x(t) (i.e., the AGV moves intentionally). The physical system simulation expects, as input, a packet trace from a network simulation, which simulates characteristic 5G network delays between the AGV and the controller.
 * `ncs-plant` / `ncs-controller`: networked control system with real network or emulated network (plant and controller communicating via sockets). Can be used together with [DETERMINISTIC6G network delay emulator](https://github.com/DETERMINISTIC6G/NetworkDelayEmulator) to emulate characteristic network delay between plant and controller.
 * `visualization`: visualization of recorded pendulum state (animation of pendulum)
 * `visualization-dualview`: visualization of recorded pendulum state (animation of pendulum), showing two pendulums simultaneously for visual comparison.
@@ -84,15 +85,18 @@ $ make
 
 ## Packet Trace
 
-The simulator apps `simulate-event_queue` and `simulate-agv` read a packet trace from a file, including the timestamps of packets (sensor samples) sent by the plant, time of samples received by the controller, and time of control input (u = force onto cart) arriving at the plant.
+The simulator apps `simulate-event_queue` and `simulate-agv` read a packet trace from a file, including the timestamps of packets (sensor samples) sent by the plant, and time of control input (u = force onto cart) arriving at the plant.
+
+The packet trace can be generated using OMNeT++/INET with DETERMINISTIC6G extensions. 
 
 The file format is CSV, with the following columns:
 
 ```
-TODO
+# pctNumber,rcvdTime,sendTime
 ```
-
-* TODO
+* pctNumber: sequence number of the packet
+* rcvdTime:  timestamp of control response arrival at the plant [s]
+* sendTime:  timestamp  of state information sent from the plant [s]
 
 ## State Trace
 
